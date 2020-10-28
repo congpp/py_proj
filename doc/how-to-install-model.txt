@@ -1,0 +1,4 @@
+先安装pip
+python -m pip install -U pip setuptools
+然后安装model
+pip install [model-name]
