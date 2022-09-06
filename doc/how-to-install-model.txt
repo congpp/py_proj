@@ -2,3 +2,5 @@
 python -m pip install -U pip setuptools
 然后安装model
 pip install [model-name]
+
+python -m pip install [module] -i https://pypi.mirrors.ustc.edu.cn/simple
