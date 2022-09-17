@@ -25,16 +25,16 @@ KEYCODE_HOME                按键Home
 KEYCODE_BACK                返回键
 KEYCODE_CALL                拨号键
 KEYCODE_ENDCALL             挂机键
-KEYCODE_0                   按键’0’
-KEYCODE_1                   按键’1’
-KEYCODE_2                   按键’2’
-KEYCODE_3                   按键’3’
-KEYCODE_4                   按键’4’
-KEYCODE_5                   按键’5’
-KEYCODE_6                   按键’6’
-KEYCODE_7                   按键’7’
-KEYCODE_8                   按键’8’
-KEYCODE_9                   按键’9’
+KEYCODE_0                   按键 0 
+KEYCODE_1                   按键 1 
+KEYCODE_2                   按键 2 
+KEYCODE_3                   按键 3 
+KEYCODE_4                   按键 4 
+KEYCODE_5                   按键 5 
+KEYCODE_6                   按键 6 
+KEYCODE_7                   按键 7 
+KEYCODE_8                   按键 8 
+KEYCODE_9                   按键 9 
 KEYCODE_DPAD_UP             导航键 向上
 KEYCODE_DPAD_DOWN           导航键 向下
 KEYCODE_DPAD_LEFT           导航键 向左
@@ -44,32 +44,32 @@ KEYCODE_VOLUME_UP           音量增加键
 KEYCODE_VOLUME_DOWN         音量减小键
 KEYCODE_POWER               电源键
 KEYCODE_CAMERA              拍照键
-KEYCODE_A                   按键’A’
-KEYCODE_B                   按键’B’
-KEYCODE_C                   按键’C’
-KEYCODE_D                   按键’D’
-KEYCODE_E                   按键’E’
-KEYCODE_F                   按键’F’
-KEYCODE_G                   按键’G’
-KEYCODE_H                   按键’H’
-KEYCODE_I                   按键’I’
-KEYCODE_J                   按键’J’
-KEYCODE_K                   按键’K’
-KEYCODE_L                   按键’L’
-KEYCODE_M                   按键’M’
-KEYCODE_N                   按键’N’
-KEYCODE_O                   按键’O’
-KEYCODE_P                   按键’P’
-KEYCODE_Q                   按键’Q’
-KEYCODE_R                   按键’R’
-KEYCODE_S                   按键’S’
-KEYCODE_T                   按键’T’
-KEYCODE_U                   按键’U’
-KEYCODE_V                   按键’V’
-KEYCODE_W                   按键’W’
-KEYCODE_X                   按键’X’
-KEYCODE_Y                   按键’Y’
-KEYCODE_Z                   按键’Z’
+KEYCODE_A                   按键 A 
+KEYCODE_B                   按键 B 
+KEYCODE_C                   按键 C 
+KEYCODE_D                   按键 D 
+KEYCODE_E                   按键 E 
+KEYCODE_F                   按键 F 
+KEYCODE_G                   按键 G 
+KEYCODE_H                   按键 H 
+KEYCODE_I                   按键 I 
+KEYCODE_J                   按键 J 
+KEYCODE_K                   按键 K 
+KEYCODE_L                   按键 L 
+KEYCODE_M                   按键 M 
+KEYCODE_N                   按键 N 
+KEYCODE_O                   按键 O 
+KEYCODE_P                   按键 P 
+KEYCODE_Q                   按键 Q 
+KEYCODE_R                   按键 R 
+KEYCODE_S                   按键 S 
+KEYCODE_T                   按键 T 
+KEYCODE_U                   按键 U 
+KEYCODE_V                   按键 V 
+KEYCODE_W                   按键 W 
+KEYCODE_X                   按键 X 
+KEYCODE_Y                   按键 Y 
+KEYCODE_Z                   按键 Z 
 KEYCODE_TAB                 Tab键
 KEYCODE_ENTER               回车键
 KEYCODE_DEL                 退格键
@@ -92,41 +92,41 @@ KEYCODE_NUM_LOCK            小键盘锁
 KEYCODE_VOLUME_MUTE         扬声器静音键
 KEYCODE_ZOOM_IN             放大键
 KEYCODE_ZOOM_OUT            缩小键
-KEYCODE_PLUS                按键’+’
-KEYCODE_MINUS               按键’-’
-KEYCODE_STAR                按键’*’
-KEYCODE_SLASH               按键’/’
-KEYCODE_EQUALS              按键’=’
-KEYCODE_AT                  按键’@’
-KEYCODE_POUND               按键’#’
-KEYCODE_APOSTROPHE          按键’’’ (单引号)
-KEYCODE_BACKSLASH           按键’’
-KEYCODE_COMMA               按键’,’
-KEYCODE_PERIOD              按键’.’
-KEYCODE_LEFT_BRACKET        按键’[’
-KEYCODE_RIGHT_BRACKET       按键’]’
-KEYCODE_SEMICOLON           按键’;’
-KEYCODE_GRAVE               按键’`’
+KEYCODE_PLUS                按键 + 
+KEYCODE_MINUS               按键 - 
+KEYCODE_STAR                按键 * 
+KEYCODE_SLASH               按键 / 
+KEYCODE_EQUALS              按键 = 
+KEYCODE_AT                  按键 @ 
+KEYCODE_POUND               按键 # 
+KEYCODE_APOSTROPHE          按键    (单引号)
+KEYCODE_BACKSLASH           按键  
+KEYCODE_COMMA               按键 , 
+KEYCODE_PERIOD              按键 . 
+KEYCODE_LEFT_BRACKET        按键 [ 
+KEYCODE_RIGHT_BRACKET       按键 ] 
+KEYCODE_SEMICOLON           按键 ; 
+KEYCODE_GRAVE               按键 ` 
 KEYCODE_SPACE               空格键
-KEYCODE_NUMPAD_0            小键盘按键’0’
-KEYCODE_NUMPAD_1            小键盘按键’1’
-KEYCODE_NUMPAD_2            小键盘按键’2’
-KEYCODE_NUMPAD_3            小键盘按键’3’
-KEYCODE_NUMPAD_4            小键盘按键’4’
-KEYCODE_NUMPAD_5            小键盘按键’5’
-KEYCODE_NUMPAD_6            小键盘按键’6’
-KEYCODE_NUMPAD_7            小键盘按键’7’
-KEYCODE_NUMPAD_8            小键盘按键’8’
-KEYCODE_NUMPAD_9            小键盘按键’9’
-KEYCODE_NUMPAD_ADD          小键盘按键’+’
-KEYCODE_NUMPAD_SUBTRACT     小键盘按键’-’
-KEYCODE_NUMPAD_MULTIPLY     小键盘按键’*’
-KEYCODE_NUMPAD_DIVIDE       小键盘按键’/’
-KEYCODE_NUMPAD_EQUALS       小键盘按键’=’
-KEYCODE_NUMPAD_COMMA        小键盘按键’,’
-KEYCODE_NUMPAD_DOT          小键盘按键’.’
-KEYCODE_NUMPAD_LEFT_PAREN   小键盘按键’(’
-KEYCODE_NUMPAD_RIGHT_PAREN  小键盘按键’)’
+KEYCODE_NUMPAD_0            小键盘按键 0 
+KEYCODE_NUMPAD_1            小键盘按键 1 
+KEYCODE_NUMPAD_2            小键盘按键 2 
+KEYCODE_NUMPAD_3            小键盘按键 3 
+KEYCODE_NUMPAD_4            小键盘按键 4 
+KEYCODE_NUMPAD_5            小键盘按键 5 
+KEYCODE_NUMPAD_6            小键盘按键 6 
+KEYCODE_NUMPAD_7            小键盘按键 7 
+KEYCODE_NUMPAD_8            小键盘按键 8 
+KEYCODE_NUMPAD_9            小键盘按键 9 
+KEYCODE_NUMPAD_ADD          小键盘按键 + 
+KEYCODE_NUMPAD_SUBTRACT     小键盘按键 - 
+KEYCODE_NUMPAD_MULTIPLY     小键盘按键 * 
+KEYCODE_NUMPAD_DIVIDE       小键盘按键 / 
+KEYCODE_NUMPAD_EQUALS       小键盘按键 = 
+KEYCODE_NUMPAD_COMMA        小键盘按键 , 
+KEYCODE_NUMPAD_DOT          小键盘按键 . 
+KEYCODE_NUMPAD_LEFT_PAREN   小键盘按键 ( 
+KEYCODE_NUMPAD_RIGHT_PAREN  小键盘按键 ) 
 KEYCODE_NUMPAD_ENTER        小键盘按键回车
 
 """
