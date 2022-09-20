@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import sys
 import os
+import re
 from shapely.geometry import *
 
 class OcrTextItem:
@@ -15,20 +16,34 @@ class OcrTextItem:
 		lb = LineString((pts[1], pts[3]))
 		lc = la.intersection(lb)
 		return Point(lc.bounds[0], lc.bounds[1])
+	
+	def isHorizontalAlignWith(self, txtItem, diff=100):
+		pt1 = self.getClickPoint()
+		pt2 = txtItem.getClickPoint()
+		return abs(pt1.y - pt2.y) < diff
+		
+	def isVerticalAlignWith(self, txtItem, diff=100):
+		pt1 = self.getClickPoint()
+		pt2 = txtItem.getClickPoint()
+		return abs(pt1.x - pt2.x) < diff
 
 
 def findTextItem(ocrRes, text):
+	if ocrRes == None:
+		return None
 	#[[[59.0, 56.0], [151.0, 56.0], [151.0, 81.0], [59.0, 81.0]], ('我的订单', 0.9951043725013733)]
 	for t in ocrRes:
 		if t[1][0] == text:
 			print('ocr find: ' + t[1][0])
 			return OcrTextItem(t)
-		else:
-			print('skip: ' + t[1][0])
+		#else:
+		#	print('skip: ' + t[1][0])
 	return None
 
 def matchTextItem(ocrRes, text):
-	#([[226, 170], [414, 170], [414, 220], [226, 220]], 'text', 0.8261902332305908),
+	if ocrRes == None:
+		return None
+	#[[[59.0, 56.0], [151.0, 56.0], [151.0, 81.0], [59.0, 81.0]], ('我的订单', 0.9951043725013733)]
 	cmpl = re.compile(text)
 	for t in ocrRes:
 		if cmpl.match(t[1][0]) != None:

@@ -205,6 +205,14 @@ class AdbDriver:
     def goHome(self):
         self.keyevent('KEYCODE_HOME')
     
+    def goHomeByGoBack(self, n):
+        if n == 0:
+            return
+        cmd = 'for i in `seq 0 %d`; do input keyevent KEYCODE_BACK; sleep 0.2; done' % (n - 1)
+        for i in range(0, n):
+            self.goBack()
+            time.sleep(0.2)
+
     def goBack(self):
         self.keyevent('KEYCODE_BACK')
 
