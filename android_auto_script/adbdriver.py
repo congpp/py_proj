@@ -186,6 +186,10 @@ class AdbDriver:
         #adb shell input tap 50 250
         self.runCmd('shell input tap %d %d' % (x, y))
 
+    def click(self, xy):
+        #adb shell input tap 50 250
+        self.runCmd('shell input tap %d %d' % xy)
+
     def longPress(self, x1, y1, x2, y2, ms=1000):
         #adb shell input swipe 100 100 100 100 1000
         self.runCmd('shell input swipe %d %d %d %d %d' % (x1, y1, x2, y2, ms))
@@ -208,10 +212,11 @@ class AdbDriver:
     def goHomeByGoBack(self, n):
         if n == 0:
             return
-        cmd = 'for i in `seq 0 %d`; do input keyevent KEYCODE_BACK; sleep 0.2; done' % (n - 1)
-        for i in range(0, n):
-            self.goBack()
-            time.sleep(0.2)
+        cmd = 'shell for i in `seq 0 %d`; do input keyevent KEYCODE_BACK; sleep 0.2; done' % (n - 1)
+        self.runCmd(cmd)
+        #for i in range(0, n):
+        #    self.goBack()
+        #    time.sleep(0.2)
 
     def goBack(self):
         self.keyevent('KEYCODE_BACK')

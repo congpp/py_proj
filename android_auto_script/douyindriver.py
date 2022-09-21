@@ -14,7 +14,8 @@ import cv2
 class DouYinDriver(appdriver.AppDriver):
 
     tagMain = ['关注.{0,6}', '推荐', '精选']
-    tagLingJinBi = ['金币收益', '现金收益', '日常任务']
+    tagLingJinBi = ['金币收益', '现金收益']
+    titleBarClrOfLingJinBi = [113,80,255]
 
     def __init__(self) -> None:
         self.phone = screen.SamSungNote4()
@@ -25,11 +26,11 @@ class DouYinDriver(appdriver.AppDriver):
         super().__init__()
 
     def isAtMainPage(self):
-        txt = self.loopUntilTextMatch(self.tagMain, 1)
-        guanzhu = matchTextItem(txt, self.tagMain[0])
-        tuijian = findTextItem(txt, self.tagMain[1])
+        ocrRes = self.loopUntilTextMatch(self.tagMain, 1)
+        guanzhu = self.matchTextItem(ocrRes, self.tagMain[0])
+        tuijian = self.findTextItem(ocrRes, self.tagMain[1])
         if tuijian == None:
-            tuijian = findTextItem(txt, self.tagMain[2])
+            tuijian = self.findTextItem(ocrRes, self.tagMain[2])
         if tuijian != None and guanzhu != None and guanzhu.isHorizontalAlignWith(tuijian, self.phone.height() * 0.05):
             print('首页已进入')
             return True
@@ -44,10 +45,10 @@ class DouYinDriver(appdriver.AppDriver):
 
     def closeAllPopup(self, popupinfo):
         for it in popupinfo:
-            txt = self.loopUntilTextFound(it, 2)
-            if txt != None:
-                print('关掉青少年模式')
-                txtItem = findTextItem(txt, popupinfo[it])
+            ocrRes = self.loopUntilTextFound(it, 2)
+            if ocrRes != None:
+                print('关掉-' + it)
+                txtItem = self.findTextItem(ocrRes, popupinfo[it])
                 pt = txtItem.getClickPoint()
                 self.adb.click(pt.x, pt.y)
                 time.sleep(2)
@@ -68,8 +69,8 @@ class DouYinDriver(appdriver.AppDriver):
 
             time.sleep(5)
             print('尝试进入金币界面')
-            txt = self.loopUntilTextFound(self.tagLingJinBi, 5)
-            if txt == None:
+            ocrRes = self.loopUntilTextFound(self.tagLingJinBi, 5)
+            if ocrRes == None:
                 print('领金币进入失败，尝试关掉所有弹框')
                 self.closeAllPopupInMain()
                 continue
@@ -84,10 +85,9 @@ class DouYinDriver(appdriver.AppDriver):
         time.sleep(2)
 
         print('找到并打开app')
-        txt = self.loopUntilTextFound([self.appName])
-        txtItem = findTextItem(txt, self.appName)
-        pt = txtItem.getClickPoint()
-        self.adb.click(pt.x, pt.y)
+        ocrRes = self.loopUntilTextFound([self.appName])
+        txtItem = self.findTextItem(ocrRes, self.appName)
+        self.adb.click(txtItem.getClickXY())
         time.sleep(2)
 
         print('等待进入主页')
@@ -100,47 +100,156 @@ class DouYinDriver(appdriver.AppDriver):
 
         self.autoWatchAd()
 
+    #等待广告视频播完
     def waitVideo(self):
-        tag=['.*s后可领奖励', '领取成功']
+        print('waitVideo')
+        time.sleep(40)
+        tag=['.*s后可领奖励']
+        self.loopUntilTextNotMatch(tag, 10, t=0, h=self.phone.height() / 6)
+        print('广告视频已经看完')
+        self.adb.goBack()
+        time.sleep(10)
+        for i in range(2):
+            if self.loopUntilTextNotFound(['领取成功']):
+                break
+            time.sleep(10)
+        return True
 
-    def watchMeiRiQianDao(self, txt):
-        txtItem = findTextItem(txt, '每日签到')
+    #继续看视频
+    def watchVideoAgain(self, ocrRes, titletxt, btntxt):
+        print('watchVideoAgain: %s %s' % (titletxt, btntxt))
+        txtItem = self.matchTextItem(ocrRes, titletxt)
+        if txtItem == None:
+            print('没有弹出-' + titletxt)
+            return False
+        
+        txtItem = self.matchTextItem(ocrRes, btntxt)
+        if txtItem == None:
+            print('没有找到弹窗 %s 的按钮 %s' % (titletxt, btntxt))
+            return False
+        self.adb.click(txtItem.getClickXY())
+        self.waitVideo()
+        return True
+        
+    #继续看视频
+    def handleVideoAgainPopup(self, ocrRes):
+        print('handleVideoAgainPopup')
+        tag={'看广告视频再赚.*':'看广告视频再赚.*', '再看一个视频额外获得.*':'领取奖励'}
+        for it in tag:
+            if self.watchVideoAgain(ocrRes, it, tag[it]):
+                return True
+        return False
+
+    #每日签到弹框
+    def handleMeiRiQianDaoPopup(self, ocrRes):
+        print('handleMeiRiQianDaoPopup')
+        txtItem = self.findTextItem(ocrRes, '每日签到')
         if txtItem == None:
             return False
 
-        txtItem = matchTextItem(txt, '立即签到.*')
+        txtItem = self.matchTextItem(ocrRes, '立即签到.*')
         if txtItem != None:
-            pt = txtItem.getClickPoint()
-            self.adb.click(pt.x, pt.y)
-        time.sleep(5)
+            self.adb.click(txtItem.getClickXY())
+        time.sleep(10)
 
-        txt = self.loopUntilTextMatch(['签到成功.*'], 5)
-        txtItem = matchTextItem(txt, '看广告视频再赚.*')
+        ocrRes = self.loopUntilTextMatch(['签到成功.*'], 5)
+        txtItem = self.matchTextItem(ocrRes, '看广告视频再赚.*')
         if txtItem != None:
-            pt = txtItem.getClickPoint()
-            self.adb.click(pt.x, pt.y)
+            self.adb.click(txtItem.getClickXY())
         
         self.waitVideo()
         return True
 
-    def autoWatchAd(self):
-        while True:
-            time.sleep(5)
-            txt = self.makeScreenCapGetText()
-            if self.watchMeiRiQianDao(txt):
-                continue
+    #签到
+    def handleQianDao(self, ocrRes):
+        print('handleQianDao')
+        txtItem = self.findTextItemEx(ocrRes, lambda txtItem: txtItem.text=='签到' and txtItem.getClickXY()[0] > self.phone.width() * 2 / 3)
+        if txtItem == None:
+            txtItem = self.findTextItemEx(ocrRes, lambda txtItem: txtItem.text=='已签到' and txtItem.getClickXY()[0] > self.phone.width() * 2 / 3)
+            if txtItem != None:
+                print(txtItem.text)
+            return False
 
-    def run(self):
+        self.adb.click(txtItem.getClickXY())
+        time.sleep(10)
+
+        ocrRes = self.loopUntilTextMatch(['签到成功.*'], 5)
+        txtItem = self.matchTextItem(ocrRes, '看广告视频再赚.*')
+        if txtItem != None:
+            ltrb = txtItem.getLTRB()
+            self.adb.click(ltrb[0]-10, ltrb[1])
+        
+        self.waitVideo()
+        return True
+
+    def handleTaskItem(self, ocrRes, titletxt, btnTxt):
+        titles = self.matchAllTextItem(ocrRes, titletxt)
+        btns = self.matchAllTextItem(ocrRes, btnTxt)
+        if titles == None or btns == None:
+            return False
+        
+        for t in titles:
+            for b in btns:
+                if t.isHorizontalAlignWith(b):
+                    self.adb.click(b.getClickXY())
+                    self.waitVideo()
+                    return True
+        return False
+
+
+    def isAtLingJinBiPage(self, ocrRes):
+        print('isAtLingJinBiPage')
+        txtItem = self.findTextItemEx(ocrRes, lambda t: t.text in self.tagLingJinBi)
+        if txtItem != None:
+            print('当前在领金币页面')
+            return True
+        txtItem = self.findTextItemEx(ocrRes, lambda t: t.text == '赚钱任务' and t.getClickXY()[1] < self.phone.h * 0.125)
+        if txtItem != None:
+            print('当前在领金币页面')
+            return True
+        print('不在领金币页面')
+        return False
+
+    #自动做任务
+    def autoWatchAd(self):
+        upOrDown = 0
+        print('autoWatchAd')
+        while True:
+            time.sleep(10)
+            ocrRes = self.makeScreenCapGetText()
+            if self.handleMeiRiQianDaoPopup(ocrRes):
+                continue
+            elif self.handleQianDao(ocrRes):
+                continue
+            elif self.handleVideoAgainPopup(ocrRes):
+                continue
+            elif self.handleVideoAgainPopup(ocrRes):
+                continue
+            elif not self.isAtLingJinBiPage(ocrRes):
+                self.adb.goBack()
+                continue
+            elif self.handleTaskItem(ocrRes, '看广告赚金币', '去领取'):
+                continue
+            else:
+                upOrDown+=1
+                if upOrDown < 5:
+                    self.scrollUp()
+                elif upOrDown < 10:
+                    self.scrollDown()
+                else:
+                    upOrDown = 0
+
+    def start(self):
         print('drive starts')
         self.goHomeAndStartApp()
 
 
 def main():
-    try:
-        douyin = DouYinDriver()
-        douyin.run()
-    except Exception as e:
-        raise e
+    douyin = DouYinDriver()
+    if sys.argv[1].lower() == '-c':
+        douyin.autoWatchAd()
+    else:
+        douyin.start()
 
 
 if __name__ == '__main__':

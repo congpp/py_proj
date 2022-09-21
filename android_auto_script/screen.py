@@ -62,17 +62,24 @@ class Screen():
         py = self.getPercentY(y)
         return py > py1 and py < py2
 
+    def getNotificationBarY1Y2(self):
+        return 0, self.nbh
+
+    def getNotificationBarY(self):
+        return self.nbh + self.nbh / 2
+        
     def getTitleBarY1Y2(self):
         return self.nbh, self.nbh + self.tbh
 
     def getTitleBarY(self):
-        return (self.nbh + self.nbh + self.tbh) / 2
-        
+        return self.nbh + self.tbh / 2
+
     def getBottomBarY1Y2(self, py = 19.0 / 20.0):
         return self.h * py, self.h
 
     def getBottomBarY(self, py = 19.0 / 20.0):
-        return (self.h * py + self.h) / 2
+        t = self.h * py
+        return t + (self.h - t) / 2
 
 
 class SamSungNote4(Screen):
