@@ -21,84 +21,78 @@ class DouYinDriver(appdriver.AppDriver):
         self.phone = screen.SamSungNote4()
         self.imgName = 'screen.png'
         self.srcDir = '/sdcard/Pictures'
-        self.dstDir = 'H:/douyin'
+        self.dstDir = 'd:/cyc/douyin'
         self.appName = '抖音极速版'
         super().__init__()
 
-    def isAtMainPage(self):
-        ocrRes = self.loopUntilTextMatch(self.tagMain, 1)
-        guanzhu = self.matchTextItem(ocrRes, self.tagMain[0])
-        tuijian = self.findTextItem(ocrRes, self.tagMain[1])
-        if tuijian == None:
-            tuijian = self.findTextItem(ocrRes, self.tagMain[2])
-        if tuijian != None and guanzhu != None and guanzhu.isHorizontalAlignWith(tuijian, self.phone.height() * 0.05):
-            print('首页已进入')
+    def isAtDesktop(self):
+        tags={'联系人', '信息', '浏览器', '应用程序'}
+        #至少匹配3个
+        while len(tags) >= 1:
+            for it in tags:
+                if self.matchTextItemAtBottom(it) != None:
+                    tags.remove(it)
+                    break
+        return len(tags) <= 1
+
+    def onAtDesktop(self):
+        cnt = self.onStateChanged('desktop')
+        if cnt > 1:
+            txtItem = self.matchTextItem(self.appName)
+            if txtItem != None:
+                self.adb.click(txtItem)
+                self.onStateChanged('none')
+
+    def isAtMainPage(self): 
+        tags={'首页', '朋友', '消息.{0,3}', '我.{0,3}'}
+        #至少匹配三个
+        while len(tags) >= 1:
+            for it in tags:
+                if self.matchTextItemAtBottom(it) != None:
+                    tags.remove(it)
+                    break
+        return len(tags) <= 1
+
+    def onMainPage(self):
+        print('点击钱包位置')
+        x = self.phone.width() / 2
+        y = self.phone.getBottomBarY()
+        self.adb.click(x, y)
+        self.onStateChanged('none')
+
+    def isAtQingShaoNianMoShi(self):
+        tags={'青少年模式', '我知道了', '开启青少年.*'}
+        #至少匹配2个
+        while len(tags) >= 1:
+            for it in tags:
+                if self.matchTextItemAtBottom(it) != None:
+                    tags.remove(it)
+                    break
+        return len(tags) <= 1
+
+    def onQingShaoNianMoShi(self):
+        cnt = self.onStateChanged('qigshaonian')
+        if cnt > 1:
+            txtItem = self.matchTextItem('我知道了')
+            if txtItem != None:
+                self.adb.click(txtItem)
+                self.onStateChanged('none')
+
+    def isAtLingJinBiPage(self):
+        print('isAtLingJinBiPage')
+        txtItem = self.makeScreenCapGetTitleBarColor()
+        if txtItem != None:
+            print('当前在领金币页面')
             return True
-        return False
-
-    def loopUntilVideoTapFound(self):
-        for i in range(0, 5):
-            if self.isAtMainPage():
-                return True
-            time.sleep(5)
-        return False
-
-    def closeAllPopup(self, popupinfo):
-        for it in popupinfo:
-            ocrRes = self.loopUntilTextFound(it, 2)
-            if ocrRes != None:
-                print('关掉-' + it)
-                txtItem = self.findTextItem(ocrRes, popupinfo[it])
-                pt = txtItem.getClickPoint()
-                self.adb.click(pt.x, pt.y)
-                time.sleep(2)
-
-    def closeAllPopupInMain(self):
-        popupinfo = {
-            '青少年模式': '我知道了'
-        }
-        self.closeAllPopup(popupinfo)
-
-    def tryEnterLingJinBi(self):
-        for i in range(1, 5):
-            if self.isAtMainPage():
-                print('点击钱包位置')
-                x = self.phone.width() / 2
-                y = self.phone.getBottomBarY()
-                self.adb.click(x, y)
-
-            time.sleep(5)
-            print('尝试进入金币界面')
-            ocrRes = self.loopUntilTextFound(self.tagLingJinBi, 5)
-            if ocrRes == None:
-                print('领金币进入失败，尝试关掉所有弹框')
-                self.closeAllPopupInMain()
-                continue
-
+        txtItem = self.findTextItemEx(lambda t: t.text == '赚钱任务' and t.getClickXY()[1] < self.phone.h * 0.125)
+        if txtItem != None:
+            print('当前在领金币页面')
             return True
-
+        print('不在领金币页面')
         return False
 
-    def goHomeAndStartApp(self):
-        print('回到桌面')
-        self.adb.goHomeByGoBack(10)
-        time.sleep(2)
-
-        print('找到并打开app')
-        ocrRes = self.loopUntilTextFound([self.appName])
-        txtItem = self.findTextItem(ocrRes, self.appName)
-        self.adb.click(txtItem.getClickXY())
-        time.sleep(2)
-
-        print('等待进入主页')
-        self.loopUntilVideoTapFound()
-        time.sleep(5)
-
-        print('进入金币界面')
-        if not self.tryEnterLingJinBi():
-            raise (Exception("进入金币界面-失败"))
-
-        self.autoWatchAd()
+    def onLingJinBi(self):
+        pass
 
     #等待广告视频播完
     def waitVideo(self):
@@ -182,9 +176,9 @@ class DouYinDriver(appdriver.AppDriver):
         self.waitVideo()
         return True
 
-    def handleTaskItem(self, ocrRes, titletxt, btnTxt):
-        titles = self.matchAllTextItem(ocrRes, titletxt)
-        btns = self.matchAllTextItem(ocrRes, btnTxt)
+    def handleTaskItem(self, titletxt, btnTxt):
+        titles = self.matchAllTextItem(titletxt)
+        btns = self.matchAllTextItem(btnTxt)
         if titles == None or btns == None:
             return False
         
@@ -196,39 +190,29 @@ class DouYinDriver(appdriver.AppDriver):
                     return True
         return False
 
-
-    def isAtLingJinBiPage(self, ocrRes):
-        print('isAtLingJinBiPage')
-        txtItem = self.findTextItemEx(ocrRes, lambda t: t.text in self.tagLingJinBi)
-        if txtItem != None:
-            print('当前在领金币页面')
-            return True
-        txtItem = self.findTextItemEx(ocrRes, lambda t: t.text == '赚钱任务' and t.getClickXY()[1] < self.phone.h * 0.125)
-        if txtItem != None:
-            print('当前在领金币页面')
-            return True
-        print('不在领金币页面')
-        return False
-
-    #自动做任务
-    def autoWatchAd(self):
+    #运行
+    def run(self):
+        cnt = 1
         upOrDown = 0
-        print('autoWatchAd')
         while True:
-            time.sleep(10)
+            print('\n================= run %d =================\n' % (cnt))
+            cnt += 1
+            time.sleep(15)
             ocrRes = self.makeScreenCapGetText()
-            if self.handleMeiRiQianDaoPopup(ocrRes):
+            if self.isAtDesktop():
+                self.onAtDesktop()
                 continue
-            elif self.handleQianDao(ocrRes):
+            elif self.isAtQingShaoNianMoShi():
+                self.onQingShaoNianMoShi()
                 continue
-            elif self.handleVideoAgainPopup(ocrRes):
+            elif self.handleVideoAgainPopup():
                 continue
-            elif self.handleVideoAgainPopup(ocrRes):
+            elif self.handleVideoAgainPopup():
                 continue
-            elif not self.isAtLingJinBiPage(ocrRes):
+            elif not self.isAtLingJinBiPage():
                 self.adb.goBack()
                 continue
-            elif self.handleTaskItem(ocrRes, '看广告赚金币', '去领取'):
+            elif self.handleTaskItem('看广告赚金币', '去领取'):
                 continue
             else:
                 upOrDown+=1

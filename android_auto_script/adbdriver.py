@@ -186,9 +186,9 @@ class AdbDriver:
         #adb shell input tap 50 250
         self.runCmd('shell input tap %d %d' % (x, y))
 
-    def click(self, xy):
+    def click(self, txtItem):
         #adb shell input tap 50 250
-        self.runCmd('shell input tap %d %d' % xy)
+        self.runCmd('shell input tap %d %d' % txtItem.getClickXY())
 
     def longPress(self, x1, y1, x2, y2, ms=1000):
         #adb shell input swipe 100 100 100 100 1000

@@ -14,6 +14,8 @@ class AppDriver():
     srcDir = None
     dstDir = None
     appName = None
+    stateCounter={}
+    ocrRes = None
 
     def __init__(self) -> None:
         self.ocr = PaddleOCR(use_angle_cls=False, lang="ch")
@@ -50,6 +52,7 @@ class AppDriver():
             #img = cvimage.Image(self.dstImg)
             txt = self.ocr.ocr(self.dstImg)
         # print(txt)
+        self.ocrRes = txt
         return txt
 
     def loopUntilTextFound(self, text, repeats=10, l=-1, t=-1, w=-1, h=-1):
@@ -106,7 +109,8 @@ class AppDriver():
                 return True
         return False
 
-    def findTextItem(self, ocrRes, text):
+    def findTextItem(self, text):
+        ocrRes = self.ocrRes
         if ocrRes == None:
             return None
         #[[[59.0, 56.0], [151.0, 56.0], [151.0, 81.0], [59.0, 81.0]], ('我的订单', 0.9951043725013733)]
@@ -118,7 +122,8 @@ class AppDriver():
             #	print('skip: ' + t[1][0])
         return None
 
-    def findAllTextItem(self, ocrRes, text):
+    def findAllTextItem(self, text):
+        ocrRes = self.ocrRes
         if ocrRes == None:
             return None
         res = []
@@ -131,7 +136,8 @@ class AppDriver():
             #	print('skip: ' + t[1][0])
         return res
 
-    def matchTextItem(self, ocrRes, text):
+    def matchTextItem(self, text):
+        ocrRes = self.ocrRes
         if ocrRes == None:
             return None
         #[[[59.0, 56.0], [151.0, 56.0], [151.0, 81.0], [59.0, 81.0]], ('我的订单', 0.9951043725013733)]
@@ -142,7 +148,8 @@ class AppDriver():
                 return OcrTextItem(t)
         return None
 
-    def matchAllTextItem(self, ocrRes, text):
+    def matchAllTextItem(self, text):
+        ocrRes = self.ocrRes
         if ocrRes == None:
             return None
         res = []
@@ -154,7 +161,8 @@ class AppDriver():
                 res.append(OcrTextItem(t))
         return res
 
-    def findTextItemEx(self, ocrRes, callbackFunc):
+    def findTextItemEx(self, callbackFunc):
+        ocrRes = self.ocrRes
         if ocrRes == None:
             return None
         #[[[59.0, 56.0], [151.0, 56.0], [151.0, 81.0], [59.0, 81.0]], ('我的订单', 0.9951043725013733)]
@@ -162,6 +170,66 @@ class AppDriver():
             txtItem = OcrTextItem(t)
             if callbackFunc(txtItem):
                 print('ocr find: ' + t[1][0])
+                return txtItem
+            # else:
+            #	print('skip: ' + t[1][0])
+        return None
+
+    def matchTextItemAtLeft(self, text, ft=0.25):
+        ocrRes = self.ocrRes
+        if ocrRes == None:
+            return None
+        #[[[59.0, 56.0], [151.0, 56.0], [151.0, 81.0], [59.0, 81.0]], ('我的订单', 0.9951043725013733)]
+        cmpl = re.compile(text)
+        w = self.phone.w * ft
+        for t in ocrRes:
+            if t[0][0] < w and cmpl.match(t[1][0]) != None:
+                txtItem = OcrTextItem(t)
+                return txtItem
+            # else:
+            #	print('skip: ' + t[1][0])
+        return None
+
+    def matchTextItemAtTop(self, text, ft=0.25):
+        ocrRes = self.ocrRes
+        if ocrRes == None:
+            return None
+        #[[[59.0, 56.0], [151.0, 56.0], [151.0, 81.0], [59.0, 81.0]], ('我的订单', 0.9951043725013733)]
+        cmpl = re.compile(text)
+        h = self.phone.h * ft
+        for t in ocrRes:
+            if t[0][1] < h and cmpl.match(t[1][0]) != None:
+                txtItem = OcrTextItem(t)
+                return txtItem
+            # else:
+            #	print('skip: ' + t[1][0])
+        return None
+
+    def matchTextItemAtRight(self, text, ft=0.75):
+        ocrRes = self.ocrRes
+        if ocrRes == None:
+            return None
+        #[[[59.0, 56.0], [151.0, 56.0], [151.0, 81.0], [59.0, 81.0]], ('我的订单', 0.9951043725013733)]
+        cmpl = re.compile(text)
+        r = self.phone.w * ft
+        for t in ocrRes:
+            if t[0][1] > r and cmpl.match(t[1][0]) != None:
+                txtItem = OcrTextItem(t)
+                return txtItem
+            # else:
+            #	print('skip: ' + t[1][0])
+        return None
+
+    def matchTextItemAtBottom(self, text, ft=0.75):
+        ocrRes = self.ocrRes
+        if ocrRes == None:
+            return None
+        #[[[59.0, 56.0], [151.0, 56.0], [151.0, 81.0], [59.0, 81.0]], ('我的订单', 0.9951043725013733)]
+        cmpl = re.compile(text)
+        h = self.phone.h * ft
+        for t in ocrRes:
+            if t[0][1] > h and cmpl.match(t[1][0]) != None:
+                txtItem = OcrTextItem(t)
                 return txtItem
             # else:
             #	print('skip: ' + t[1][0])
@@ -178,3 +246,17 @@ class AppDriver():
         x1, y1, x2, y2 = self.phone.w * fx, self.phone.h - \
             300 * fx, self.phone.w * (1-fx), 300 * fx
         self.adb.swipe(x2, y2, x1, y1)
+
+    def onStateChanged(self, stateName):
+        cnt = 1
+        #inc state
+        if stateName in self.stateCounter:
+            cnt = self.stateCounter[stateName] + 1
+            self.stateCounter[stateName] = cnt
+        else:
+            self.stateCounter[stateName] = 1
+        #clear other states
+        for k in self.stateCounter:
+            if k != stateName:
+                self.stateCounter[k] = 0
+        return cnt
