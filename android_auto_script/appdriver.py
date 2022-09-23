@@ -247,16 +247,28 @@ class AppDriver():
                 n += 1
         return n
 
-    def scrollDown(self):
-        fx = random()
-        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h - \
-            300 * fx, self.phone.w * (1-fx), 300 * fx
+    def swipeDown(self):
+        fx = 3/6 + random() * 1/12
+        fy = 1/8 + random() * 1/16
+        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h * fy, self.phone.w * fx, self.phone.h * (1-fy)
         self.adb.swipe(x1, y1, x2, y2)
 
-    def scrollUp(self):
-        fx = random()
-        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h - \
-            300 * fx, self.phone.w * (1-fx), 300 * fx
+    def swipeUp(self):
+        fx = 3/6 + random() * 1/12
+        fy = 1/8 + random() * 1/16
+        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h * fx, self.phone.w * fx, self.phone.h * (1-fx)
+        self.adb.swipe(x2, y2, x1, y1)
+
+    def swipeRight(self):
+        fx = 1/6 + random() * 1/12
+        fy = 4/8 + random() * 1/16
+        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h * fx, self.phone.w * (1-fx), self.phone.h * fx
+        self.adb.swipe(x1, y1, x2, y2)
+
+    def swipeLeft(self):
+        fx = 1/6 + random() * 1/12
+        fy = 4/8 + random() * 1/16
+        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h * fx, self.phone.w * (1-fx), self.phone.h * fx
         self.adb.swipe(x2, y2, x1, y1)
 
     def onStateChanged(self, stateName):

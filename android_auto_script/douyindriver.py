@@ -19,6 +19,7 @@ STATE_MEIRIQIANDAOPOPUP_OK = 'mrqdpp-ok'
 STATE_LINGJINBI = 'jinbi'
 STATE_AD_VIDEO = 'ad'
 STATE_AD_VIDEO_AGAIN = 'ad-again'
+STATE_SHUASHIPIN = 'shuashipin'
 COLOR_TITLE_BAR_LINGJINBI = [113, 80, 255]
 COLOR_TITLE_BAR_LINGJINBI_DARK = [128, 42, 51]
 
@@ -28,6 +29,7 @@ class DouYinDriver(appdriver.AppDriver):
     tagMain = ['关注.{0,6}', '推荐', '精选']
     tagLingJinBi = ['金币收益', '现金收益']
     taskItem = None
+    idleTimeBegin = 0
 
     def __init__(self) -> None:
         self.phone = screen.SamSungNote4()
@@ -104,23 +106,17 @@ class DouYinDriver(appdriver.AppDriver):
 
     def onLingJinBi(self):
         cnt = self.onStateChanged(STATE_LINGJINBI)
-        if cnt < 2:
+        curtime = int(time.time())
+        if cnt == 1:
+            #刚刚回到这，啥也不干
+            self.idleTimeBegin = curtime
             return
-
-        while True:
-            self.makeScreenCapGetText()
-            if self.isAtDesktop() or self.isAtMainPage():
-                return
-            elif self.isAtMeiRiQianDaoPopup():
-                self.onMeiRiQianDaoPopup()
-            elif self.isAtAdVideo():
-                self.onAdVideo()
-            elif self.isAtWatchAdVideoAgain():
-                self.onWatchAdVideoAgain()
-            elif self.isTaskItemFound():
-                self.onTaskItemFount()
-            elif not self.isAtLingJinBiPage():
-                self.adb.goBack()
+        diff = curtime - self.idleTimeBegin
+        if diff > 5 * 60:
+            #超过5分钟了，说明没找到任何任务，滚动下屏幕吧
+            self.swipeUp()
+        else:
+            self.swipeDown()
 
     # 每日签到弹框
     def isAtMeiRiQianDaoPopup(self):
@@ -144,27 +140,6 @@ class DouYinDriver(appdriver.AppDriver):
             self.adb.clickPoint(txtItem.getClickXY())
             return
 
-    # 每日签到弹框
-    # def isAtMeiRiQianDaoPopupOK(self):
-    #    tags = {'签到成功.*', '看广告视频再赚.*.*', '签到提醒', '今日已领'}
-    #    # 至少匹配三个
-    #    cnt = self.getMatchCount(tags, self.matchTextItem)
-    #    if cnt >= 3:
-    #        print("isAtMeiRiQianDaoPopupOK -> YES")
-    #        return True
-    #    print("isAtMeiRiQianDaoPopupOK -> NO")
-    #    return False
-    #
-    # def onMeiRiQianDaoPopupOK(self):
-    #    cnt = self.onStateChanged(STATE_MEIRIQIANDAOPOPUP_OK)
-    #    if cnt < 2:
-    #        return
-    #
-    #    txtItem = self.matchTextItem('看广告视频再赚.*')
-    #    if txtItem != None:
-    #        print("onMeiRiQianDaoPopup click 看广告视频再赚.*")
-    #        self.adb.click(txtItem)
-
     def isAtAdVideo(self):
         tags = {'广告', '反馈', '.*.*s后可领奖励'}
         # 至少匹配三个
@@ -183,7 +158,7 @@ class DouYinDriver(appdriver.AppDriver):
     # 继续看视频
     def isAtWatchAdVideoAgain(self):
         tags = [['签到成功.*', '看广告视频再赚.*', '已连续签到.*'],
-                ['再看一个视频额外获得.*', '领取奖励', '坚持推出']]
+                ['再看一个视频额外获得.*', '领取奖励', '坚持退出']]
         for it in tags:
             cnt = self.getMatchCount(it, self.matchTextItem)
             if cnt >= 3:
@@ -230,30 +205,61 @@ class DouYinDriver(appdriver.AppDriver):
         if cnt > 1:
             self.adb.clickPoint(self.taskItem[1].getClickXY())
 
+    def onShuaShiPin(self):
+        cnt = self.onStateChanged(STATE_SHUASHIPIN)
+        self.swipeUp()
+
     # 运行
-    def run(self):
+    def runZhuanQianRenWu(self, timeout=30*60):
+        timeBegin = time.time()
         cnt = 1
         upOrDown = 0
-        while True:
-            print('\n================= run %d =================\n' % (cnt))
+        while time.time() - timeBegin < timeout:
+            print('\n================= runZhuanQianRenWu %d =================\n' % (cnt))
             cnt += 1
             time.sleep(15)
             ocrRes = self.makeScreenCapGetText()
             if self.isAtDesktop():
                 self.onAtDesktop()
-                continue
             elif self.isAtQingShaoNianMoShi():
                 self.onQingShaoNianMoShi()
-                continue
             elif self.isAtMainPage():
                 self.onMainPage()
-                continue
-            elif self.isAtLingJinBiPage():
-                self.onLingJinBi()
-                continue
+            elif self.isAtMeiRiQianDaoPopup():
+                self.onMeiRiQianDaoPopup()
+            elif self.isAtAdVideo():
+                self.onAdVideo()
+            elif self.isAtWatchAdVideoAgain():
+                self.onWatchAdVideoAgain()
+            elif self.isTaskItemFound():
+                self.onTaskItemFount()
+            elif not self.isAtLingJinBiPage():
+                self.adb.goBack()
             else:
                 pass
 
+    def runShuaShiPin(self, timeout=30*60):
+        timeBegin = time.time()
+        cnt = 1
+        upOrDown = 0
+        while time.time() - timeBegin < timeout:
+            print('\n================= runShuaShiPin %d =================\n' % (cnt))
+            cnt += 1
+            time.sleep(10)
+            ocrRes = self.makeScreenCapGetText()
+            if self.isAtDesktop():
+                self.onAtDesktop()
+            elif self.isAtQingShaoNianMoShi():
+                self.onQingShaoNianMoShi()
+            elif self.isAtMainPage():
+                self.onShuaShiPin()
+            else:
+                self.adb.goBack()
+
+    def run(self):
+        while True:
+            self.runShuaShiPin(2*60)
+            self.runZhuanQianRenWu(2*60)
 
 def main():
     douyin = DouYinDriver()
