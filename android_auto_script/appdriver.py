@@ -26,16 +26,21 @@ class AppDriver():
         if not os.path.exists(self.dstDir):
             os.mkdir(self.dstDir)
 
-    def makeScreenCapGetTitleBarColor(self):
+    def makeScreenCap(self):
         self.adb.screenCap(self.srcImg)
         self.adb.pullFile(self.srcImg, self.dstImg)
+        return os.path.exists(self.dstImg)
+
+    def makeScreenCapGetTitleBarColor(self):
+        self.makeScreenCap()
+        return self.getCurrentImageMajorColor(0, 0, self.phone.w, self.phone.getTitleBarY1Y2()[1])
+        
+    def getCurrentImageMajorColor(self, l, t, w, h):
         img = cvimage.Image(self.dstImg)
-        x, y = self.phone.w/2, self.phone.getTitleBarY()
-        rgb = img[y][x]
+        return img.getMajorColor(l, t, w, h)
 
     def makeScreenCapGetText(self, l=-1, t=-1, w=-1, h=-1):
-        self.adb.screenCap(self.srcImg)
-        self.adb.pullFile(self.srcImg, self.dstImg)
+        self.makeScreenCap()
         if l >= 0 and t >= 0 and w >= 0 and h >= 0:
             img = cvimage.Image(self.dstImg)
             c = img.crop(l, t, w, h)
@@ -183,7 +188,7 @@ class AppDriver():
         cmpl = re.compile(text)
         w = self.phone.w * ft
         for t in ocrRes:
-            if t[0][0] < w and cmpl.match(t[1][0]) != None:
+            if t[0][0][0] < w and cmpl.match(t[1][0]) != None:
                 txtItem = OcrTextItem(t)
                 return txtItem
             # else:
@@ -198,7 +203,7 @@ class AppDriver():
         cmpl = re.compile(text)
         h = self.phone.h * ft
         for t in ocrRes:
-            if t[0][1] < h and cmpl.match(t[1][0]) != None:
+            if t[0][0][1] < h and cmpl.match(t[1][0]) != None:
                 txtItem = OcrTextItem(t)
                 return txtItem
             # else:
@@ -213,7 +218,7 @@ class AppDriver():
         cmpl = re.compile(text)
         r = self.phone.w * ft
         for t in ocrRes:
-            if t[0][1] > r and cmpl.match(t[1][0]) != None:
+            if t[0][1][0] > r and cmpl.match(t[1][0]) != None:
                 txtItem = OcrTextItem(t)
                 return txtItem
             # else:
@@ -228,12 +233,19 @@ class AppDriver():
         cmpl = re.compile(text)
         h = self.phone.h * ft
         for t in ocrRes:
-            if t[0][1] > h and cmpl.match(t[1][0]) != None:
+            if t[0][1][1] > h and cmpl.match(t[1][0]) != None:
                 txtItem = OcrTextItem(t)
                 return txtItem
             # else:
             #	print('skip: ' + t[1][0])
         return None
+
+    def getMatchCount(self, tags, matchFunc):
+        n = 0
+        for it in tags:
+            if matchFunc(it) != None:
+                n += 1
+        return n
 
     def scrollDown(self):
         fx = random()
@@ -259,4 +271,5 @@ class AppDriver():
         for k in self.stateCounter:
             if k != stateName:
                 self.stateCounter[k] = 0
+        print('ON_STATE_CHANGED -> %s [%d]' % (stateName, cnt))
         return cnt

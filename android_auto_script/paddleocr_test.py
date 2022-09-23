@@ -12,7 +12,8 @@ def main():
         img = sys.argv[1]
         ocr = PaddleOCR(use_angle_cls=False, lang="ch")
         txt = ocr.ocr(img)
-        print(txt)
+        for it in txt:
+            print(it)
 
         image = Image.open(img).convert('RGB')
         boxes = [line[0] for line in txt]

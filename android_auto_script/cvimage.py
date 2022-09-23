@@ -10,9 +10,9 @@ class Color:
     def toInt(self):
         return (self.rgb[2] << 16) | (self.rgb[1] << 8) | (self.rgb[0])
 
-    def getColorDistance(self, clr):
+    def getColorDistance(self, rgb):
         r1, g1, b1 = self.rgb
-        r2, g2, b2 = clr.rgb
+        r2, g2, b2 = rgb
         rmean = (r1 + r2) / 2
         R = r1 - r2
         G = g1 - g2
@@ -66,5 +66,5 @@ class Image:
                     majorClr = self.img[y, x]
                     majorCnt = v+1
         print('major color: %s, repeats %d' % (majorClr, majorCnt))
-        return majorClr
+        return Color(majorClr)
 
