@@ -258,8 +258,8 @@ class DouYinDriver(appdriver.AppDriver):
 
     def run(self):
         while True:
-            self.runShuaShiPin(2*60)
-            self.runZhuanQianRenWu(2*60)
+            self.runShuaShiPin(10*60)
+            self.runZhuanQianRenWu(10*60)
 
 def main():
     douyin = DouYinDriver()

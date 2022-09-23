@@ -256,19 +256,19 @@ class AppDriver():
     def swipeUp(self):
         fx = 3/6 + random() * 1/12
         fy = 1/8 + random() * 1/16
-        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h * fx, self.phone.w * fx, self.phone.h * (1-fx)
+        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h * fy, self.phone.w * fx, self.phone.h * (1-fy)
         self.adb.swipe(x2, y2, x1, y1)
 
     def swipeRight(self):
         fx = 1/6 + random() * 1/12
         fy = 4/8 + random() * 1/16
-        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h * fx, self.phone.w * (1-fx), self.phone.h * fx
+        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h * fy, self.phone.w * (1-fx), self.phone.h * fy
         self.adb.swipe(x1, y1, x2, y2)
 
     def swipeLeft(self):
         fx = 1/6 + random() * 1/12
         fy = 4/8 + random() * 1/16
-        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h * fx, self.phone.w * (1-fx), self.phone.h * fx
+        x1, y1, x2, y2 = self.phone.w * fx, self.phone.h * fy, self.phone.w * (1-fx), self.phone.h * fy
         self.adb.swipe(x2, y2, x1, y1)
 
     def onStateChanged(self, stateName):
