@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+import difflib
 import os
 from random import random
 import re
@@ -7,6 +8,7 @@ from adbdriver import *
 from paddleocr import PaddleOCR
 import cvimage
 
+class AppError(Exception): pass
 
 class AppDriver():
     phone = None
@@ -14,8 +16,12 @@ class AppDriver():
     srcDir = None
     dstDir = None
     appName = None
+    appid = None
     stateCounter={}
     ocrRes = None
+    screencapId = 0
+    debug = True
+    prevOcrRes = None
 
     def __init__(self) -> None:
         self.ocr = PaddleOCR(use_angle_cls=False, lang="ch")
@@ -27,6 +33,12 @@ class AppDriver():
             os.mkdir(self.dstDir)
 
     def makeScreenCap(self):
+        if self.screencapId > 0 and self.debug and os.path.exists(self.dstImg):
+            savedir = self.dstDir + '/debug_%d' % ((self.screencapId - 1) / 1000)
+            saveName = '%d.jpg' % (self.screencapId - 1)
+            if not os.path.exists(savedir): os.makedirs(savedir)
+            os.system('copy /Y "%s" "%s"' % (self.dstImg.replace('/', '\\'), (savedir + '/' + saveName).replace('/', '\\')))
+        self.screencapId += 1
         self.adb.screenCap(self.srcImg)
         self.adb.pullFile(self.srcImg, self.dstImg)
         return os.path.exists(self.dstImg)
@@ -57,6 +69,7 @@ class AppDriver():
             #img = cvimage.Image(self.dstImg)
             txt = self.ocr.ocr(self.dstImg)
         # print(txt)
+        prevOcrRes = self.ocrRes
         self.ocrRes = txt
         return txt
 
@@ -285,3 +298,14 @@ class AppDriver():
                 self.stateCounter[k] = 0
         print('ON_STATE_CHANGED -> %s [%d]' % (stateName, cnt))
         return cnt
+
+    def isScreenTextNotChanged(self):
+        if self.prevOcrRes == None or self.ocrRes == None:
+            return False
+        prevText, currText = '', ''
+        for it in self.prevOcrRes:
+            prevText += it[1][0]
+        for it in self.ocrRes:
+            currText += it[1][0]
+        
+        return difflib.SequenceMatcher(sorted(prevText), sorted(currText)).quick_ratio() > 0.98

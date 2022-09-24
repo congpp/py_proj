@@ -221,3 +221,6 @@ class AdbDriver:
     def goBack(self):
         self.keyevent('KEYCODE_BACK')
 
+    def forceStop(self, appid):
+        self.runCmd('shell am force-stop ' + appid)
+
