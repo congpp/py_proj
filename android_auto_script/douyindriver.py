@@ -209,7 +209,7 @@ class DouYinDriver(AppDriver):
                     return
 
     def isTaskItemFound(self):
-        tasks = {'看广告赚金币': '去领取'}
+        tasks = {'看广告赚金币': '去领取', '走路赚金币':'去赚钱', }
         for it in tasks:
             titles = self.matchAllTextItem(it)
             btns = self.matchAllTextItem(tasks[it])
@@ -247,6 +247,64 @@ class DouYinDriver(AppDriver):
 
         self.adb.goBack()
 
+    def isAtZouLuZhuanJinBiTop(self):
+        tags=['.*抖音极速版.*', '今日走路进度', '连续走.*拿大奖', '好友排行第.*名', '今日走路.*步']
+        cnt = self.getMatchCount(tags, self.matchTextItem)
+        if cnt >= 4:
+            print('isAtZouLuZhuanJinBiTop -> YES')
+            return True
+
+        print('isAtZouLuZhuanJinBiTop -> NO')
+        return False
+
+    def onZouLuZhuanJinBiTop(self):
+        cnt = self.onStateChanged('onZouLuZhuanJinBiTop')
+        if cnt > 3:
+            raise(AppError('onZouLuZhuanJinBiTop'))
+        self.swipeUp()
+
+    def isAtZouLuZhuanJinBiBottom(self):
+        tags=['走路赚钱', '领\\d+金币', '好友步数排行', '可能认识的人']
+        cnt = self.getMatchCount(tags, self.matchTextItem)
+        if cnt >= 3:
+            print('isAtZouLuZHuanJinBiBottom -> YES')
+            return True
+
+        print('isAtZouLuZHuanJinBiBottom -> NO')
+        return False
+
+    def onZouLuZhuanJinBiBottom(self):
+        cnt = self.onStateChanged('onZouLuZhuanJinBiBottom')
+        if cnt > 3:
+            raise(AppError('onZouLuZhuanJinBiBottom'))
+        txtItem = self.matchTextItem('领\\d+金币')
+        if txtItem != None: 
+            self.adb.clickPoint(txtItem.getClickXY())
+
+    def isAtGuangjieDeJiangLi(self):
+        tags=['逛街得奖励', '浏览\\d+秒可领\\d+金币', '^\d+秒$']
+        cnt = self.getMatchCount(tags, self.matchTextItem)
+        if cnt == 3:
+            print('isAtGuangjieDeJiangLi -> YES')
+            return True
+
+        print('isAtGuangjieDeJiangLi -> NO')
+        return False
+
+    def onGuangJieLingJinBi(self):
+        cnt = self.onStateChanged('onGuangJieLingJinBi')
+        if cnt > 2:
+            raise(AppError('onZouLuZhuanJinBiBottom'))
+        reg = '^(\d+)秒$'
+        txtItem = self.matchTextItem(reg)
+        if txtItem == None:
+             return
+        sec = int(re.match(reg, txtItem.text)[1])
+        while sec > 0:
+            self.swipeUp()
+            time.sleep(5)
+            sec -= 5
+
     # 运行
     def runZhuanQianRenWu(self, timeout=30*60):
         try:
@@ -255,26 +313,18 @@ class DouYinDriver(AppDriver):
                 print('\n================= runZhuanQianRenWu %d =================\n' % (self.screencapId))
                 time.sleep(15)
                 ocrRes = self.makeScreenCapGetText()
-                if self.isAtDesktop():
-                    self.onAtDesktop()
-                elif self.isAtQingShaoNianMoShi():
-                    self.onQingShaoNianMoShi()
-                elif self.isAtMainPage():
-                    self.onMainPage()
-                elif self.isAtMeiRiQianDaoPopup():
-                    self.onMeiRiQianDaoPopup()
-                elif self.isAtAdVideo():
-                    self.onAdVideo()
-                elif self.isAtWatchAdVideoAgain():
-                    self.onWatchAdVideoAgain()
-                elif self.isAtKaiBaoXiang():
-                    self.onKaiBaoXiang()
-                elif self.isTaskItemFound():
-                    self.onTaskItemFount()
-                elif self.isAtLingJinBiPage():
-                    self.onLingJinBi()
-                else:
-                    self.onError()
+                if self.isAtDesktop(): self.onAtDesktop()
+                elif self.isAtQingShaoNianMoShi(): self.onQingShaoNianMoShi()
+                elif self.isAtMainPage(): self.onMainPage()
+                elif self.isAtMeiRiQianDaoPopup(): self.onMeiRiQianDaoPopup()
+                elif self.isAtAdVideo(): self.onAdVideo()
+                elif self.isAtWatchAdVideoAgain(): self.onWatchAdVideoAgain()
+                elif self.isAtKaiBaoXiang(): self.onKaiBaoXiang()
+                elif self.isAtZouLuZhuanJinBiTop(): self.onZouLuZhuanJinBiTop()
+                elif self.isAtZouLuZhuanJinBiBottom: self.onZouLuZhuanJinBiBottom()
+                elif self.isTaskItemFound(): self.onTaskItemFount()
+                elif self.isAtLingJinBiPage(): self.onLingJinBi()
+                else: self.onError()
         except AppError as e:
             print(e)
             self.adb.goHomeByGoBack(10)
@@ -287,14 +337,10 @@ class DouYinDriver(AppDriver):
                 print('\n================= runShuaShiPin %d =================\n' % (self.screencapId))
                 time.sleep(10)
                 ocrRes = self.makeScreenCapGetText()
-                if self.isAtDesktop():
-                    self.onAtDesktop()
-                elif self.isAtQingShaoNianMoShi():
-                    self.onQingShaoNianMoShi()
-                elif self.isAtMainPage():
-                    self.onShuaShiPin()
-                else:
-                    self.onError()
+                if self.isAtDesktop(): self.onAtDesktop()
+                elif self.isAtQingShaoNianMoShi(): self.onQingShaoNianMoShi()
+                elif self.isAtMainPage(): self.onShuaShiPin()
+                else: self.onError()
         except AppError as e:
             print(e)
             self.adb.goHomeByGoBack(10)

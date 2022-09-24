@@ -10,7 +10,7 @@ from PIL import Image
 def main():
     try:
         img = sys.argv[1]
-        ocr = PaddleOCR(use_angle_cls=False, lang="ch")
+        ocr = PaddleOCR(use_angle_cls=False, lang="ch", rec_batch_num=30, total_process_num=4)
         txt = ocr.ocr(img)
         for it in txt:
             print(it)
