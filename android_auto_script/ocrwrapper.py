@@ -22,17 +22,20 @@ class OcrTextItem:
 		#LT RT RB LB
 		pts = list(self.poly.exterior.coords)
 		return pts[0][0], pts[0][1], pts[2][0], pts[2][1]
-
-	def getClickPoint(self):
-		return Point(self.getClickXY())
 	
 	def isHorizontalAlignWith(self, txtItem, diff=100):
-		pt1 = self.getClickPoint()
-		pt2 = txtItem.getClickPoint()
-		return abs(pt1.y - pt2.y) < diff
+		pt1 = self.getClickXY()
+		pt2 = txtItem.getClickXY()
+		return abs(pt1[1] - pt2[1]) < diff
 		
 	def isVerticalAlignWith(self, txtItem, diff=100):
-		pt1 = self.getClickPoint()
-		pt2 = txtItem.getClickPoint()
-		return abs(pt1.x - pt2.x) < diff
+		pt1 = self.getClickXY()
+		pt2 = txtItem.getClickXY()
+		return abs(pt1[0] - pt2[0]) < diff
+
+	def isEqualTo(self, txtItem):
+		if txtItem == None:
+			return False
+		return self.isHorizontalAlignWith(txtItem, 10) and self.isVerticalAlignWith(txtItem, 10)
+
 

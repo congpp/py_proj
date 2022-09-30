@@ -12,6 +12,7 @@ def main():
         img = sys.argv[1]
         ocr = PaddleOCR(use_angle_cls=False, lang="ch", rec_batch_num=30, total_process_num=4)
         txt = ocr.ocr(img)
+        txt = sorted(txt)
         for it in txt:
             print(it)
 

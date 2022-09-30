@@ -133,7 +133,9 @@ KEYCODE_NUMPAD_ENTER        小键盘按键回车
 
 class AdbDriver:
     class AdbError(Exception) : pass
-            
+    
+    deviceName = ''
+
     """docstring for adb"""
     def __init__(self, deviceName=''):
         self.deviceName = deviceName
@@ -152,6 +154,15 @@ class AdbDriver:
         if len(text) > 0:
             print('run res: ' + text)
         return text
+
+    def devices(self):
+        devices = self.runCmd('devices').replace('\t', ' ')
+        ret=[]
+        for l in devices.split('\n'):
+            while '  ' in l: l = l.replace('  ', ' ')
+            dev = l.split(' ', 1)
+            if len(dev) == 2: ret.append(dev)
+        return ret
 
     #删除手机文件 filePath
     def delFile(self, filePath):
@@ -209,7 +220,7 @@ class AdbDriver:
     def goHome(self):
         self.keyevent('KEYCODE_HOME')
     
-    def goHomeByGoBack(self, n):
+    def goBackN(self, n):
         if n == 0:
             return
         cmd = 'shell for i in `seq 0 %d`; do input keyevent KEYCODE_BACK; sleep 0.2; done' % (n - 1)
@@ -224,3 +235,9 @@ class AdbDriver:
     def forceStop(self, appid):
         self.runCmd('shell am force-stop ' + appid)
 
+if __name__ == '__main__':
+    cmd = sys.argv[1]
+    if cmd == '-devices':
+        print(AdbDriver().devices())
+    elif cmd == '-screencap':
+        AdbDriver().screenCap('/sdcard/pictures/adb-driver-sc-%d.jpg' % (time.time()))

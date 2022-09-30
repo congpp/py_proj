@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+import sys
 import cv2
 import math
 
@@ -68,3 +69,11 @@ class Image:
         print('major color: %s, repeats %d' % (majorClr, majorCnt))
         return Color(majorClr)
 
+
+if __name__ == '__main__':
+    cmd = sys.argv[1].lower()
+    fileName = sys.argv[2]
+    if cmd == '-majorcolor':
+        img = Image(fileName)
+        clr = img.getMajorColor(0, 0, img.width(), int(img.height() * 0.125))
+        print('major color: %s' % clr.rgb)

@@ -69,7 +69,7 @@ class AppDriver():
             #img = cvimage.Image(self.dstImg)
             txt = self.ocr.ocr(self.dstImg)
         # print(txt)
-        prevOcrRes = self.ocrRes
+        self.prevOcrRes = self.ocrRes
         self.ocrRes = txt
         return txt
 
@@ -303,9 +303,13 @@ class AppDriver():
         if self.prevOcrRes == None or self.ocrRes == None:
             return False
         prevText, currText = '', ''
-        for it in self.prevOcrRes:
+        for it in sorted(self.prevOcrRes):
             prevText += it[1][0]
-        for it in self.ocrRes:
+        for it in sorted(self.ocrRes):
             currText += it[1][0]
         
-        return difflib.SequenceMatcher(sorted(prevText), sorted(currText)).quick_ratio() > 0.98
+        return difflib.SequenceMatcher(None, prevText, currText).quick_ratio() > 0.95
+
+    def goHome(self):
+        self.adb.goBackN(10)
+        self.adb.forceStop(self.appid)
