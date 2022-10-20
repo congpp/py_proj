@@ -27,7 +27,7 @@ class AppDriver():
         self.ocr = PaddleOCR(use_angle_cls=False, lang="ch")
         self.srcImg = self.srcDir + '/' + self.imgName
         self.dstImg = self.dstDir + '/' + self.imgName
-        self.adb = AdbDriver()
+        self.adb = AdbDriver('9879e031')
         # mkdir
         if not os.path.exists(self.dstDir):
             os.mkdir(self.dstDir)
@@ -260,6 +260,18 @@ class AppDriver():
                 n += 1
         return n
 
+    def clickTextItemBySwide(self, txtItem):
+        if txtItem == None:
+            return
+        xy = txtItem.getClickXY()
+        self.adb.swipe(xy[0]-10, xy[1]-10, xy[0]+10, xy[1]+10, 50)
+
+    def clickTextItemLeft(self, txtItem):
+        if txtItem == None:
+            return
+        xy = txtItem.getLTRB()
+        self.adb.click(xy[0]-10, xy[1])
+
     def swipeDown(self):
         fx = 3/6 + random() * 1/12
         fy = 1/8 + random() * 1/16
@@ -312,4 +324,5 @@ class AppDriver():
 
     def goHome(self):
         self.adb.goBackN(10)
+        self.adb.goHome()
         self.adb.forceStop(self.appid)

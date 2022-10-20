@@ -85,3 +85,7 @@ class Screen():
 class SamSungNote4(Screen):
     def __init__(self) -> None:
         super().__init__(1440, 2560, 95, 200)
+
+class XiaoMiMix2(Screen):
+    def __init__(self) -> None:
+        super().__init__(1080, 2160, 80, 126)

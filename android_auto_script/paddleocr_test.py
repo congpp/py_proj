@@ -14,7 +14,7 @@ def main():
         txt = ocr.ocr(img)
         txt = sorted(txt)
         for it in txt:
-            print(it)
+            print(it[1][0])
 
         image = Image.open(img).convert('RGB')
         boxes = [line[0] for line in txt]

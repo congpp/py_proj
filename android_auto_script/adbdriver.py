@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+import re
 import sys
 import os
 import time
@@ -174,7 +175,7 @@ class AdbDriver:
     def isFileExists(self, filePath):
         #adb -s 127.0.0.1:21503 shell if [[ -e /root ]]; then echo yes; fi
         res = self.runCmd('shell if [[ -e "' + filePath + '" ]]; then echo yes; fi')
-        return res == 'yes'
+        return res.strip(' \t\r\n') == 'yes'
 
     #拉文件 srcPath 回来，保存到电脑 dstPath
     def pullFile(self, srcPath, dstPath):
@@ -191,6 +192,12 @@ class AdbDriver:
     def screenCap(self, imgPath):
         #adb -s 127.0.0.1:21503 shell screencap imgPath
         self.runCmd('shell screencap ' + imgPath)
+        return self.isFileExists(imgPath)
+
+    #截图，保存在本地磁盘 imgPath，老机型不支持，老实用screenCap然后再pullFile回来
+    def screenPull(self, imgPath):
+        #adb -s 127.0.0.1:21503 shell screencap imgPath
+        self.runCmd('exec-out screencap -p > %s' % (imgPath))
         return self.isFileExists(imgPath)
 
     def click(self, x, y):
@@ -234,6 +241,28 @@ class AdbDriver:
 
     def forceStop(self, appid):
         self.runCmd('shell am force-stop ' + appid)
+
+    def volumnUp(self):
+        self.keyevent('KEYCODE_VOLUME_UP')
+
+    def volumnDown(self):
+        self.keyevent('KEYCODE_VOLUME_DOWN')
+
+    def volumnMute(self):
+        self.keyevent('KEYCODE_VOLUME_MUTE')
+
+    def getScreenSize(self):
+        #adb shell wm size
+        #Physical size: 1080x2160
+        ret = self.runCmd('shell wm size')
+        try:
+            r = re.search(r'(\d+)x(\d+)', ret)
+            if r != None:
+                return (int(r[1]), int(r[2]))
+        except Exception as e:
+            print(e)
+        return (0,0)
+
 
 if __name__ == '__main__':
     cmd = sys.argv[1]
