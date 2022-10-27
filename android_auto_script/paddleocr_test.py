@@ -12,9 +12,10 @@ def main():
         img = sys.argv[1]
         ocr = PaddleOCR(use_angle_cls=False, lang="ch", rec_batch_num=30, total_process_num=4)
         txt = ocr.ocr(img)
-        txt = sorted(txt)
+        #[[[59.0, 56.0], [151.0, 56.0], [151.0, 81.0], [59.0, 81.0]], ('我的订单', 0.9951043725013733)]
+        txt = sorted(txt, key=lambda it: it[0][0][1])
         for it in txt:
-            print(it[1][0])
+            print(it)
 
         image = Image.open(img).convert('RGB')
         boxes = [line[0] for line in txt]
