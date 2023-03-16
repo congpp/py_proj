@@ -1,0 +1,4 @@
+
+python -m pip install paddlepaddle shapely imgaug pyclipper lmdb tqdm numpy opencv-python==4.2.0.32 paddleocr -i https://pypi.mirrors.ustc.edu.cn/simple
+
+可能还需要安装一个 vcredist_msvc2019_x64.exe
