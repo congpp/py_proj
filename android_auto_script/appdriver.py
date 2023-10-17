@@ -7,6 +7,7 @@ import time
 from adbdriver import *
 from paddleocr import PaddleOCR
 import cvimage
+import json
 
 class AppError(Exception): pass
 
@@ -30,7 +31,7 @@ class AppDriver():
         self.adb = AdbDriver('9879e031')
         # mkdir
         if not os.path.exists(self.dstDir):
-            os.mkdir(self.dstDir)
+            os.makedirs(self.dstDir)
 
     def makeScreenCap(self):
         if self.screencapId > 0 and self.debug and os.path.exists(self.dstImg):
@@ -38,6 +39,9 @@ class AppDriver():
             saveName = '%d.jpg' % (self.screencapId - 1)
             if not os.path.exists(savedir): os.makedirs(savedir)
             os.system('copy /Y "%s" "%s"' % (self.dstImg.replace('/', '\\'), (savedir + '/' + saveName).replace('/', '\\')))
+            saveName += '.txt'
+            with open((savedir + '/' + saveName), "w", encoding='utf-8') as f:
+                json.dump(self.ocrRes, fp=f, ensure_ascii=False)
         self.screencapId += 1
         self.adb.screenCap(self.srcImg)
         self.adb.pullFile(self.srcImg, self.dstImg)

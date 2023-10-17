@@ -148,7 +148,7 @@ class AdbDriver:
             cmd = 'adb -s ' + self.deviceName + ' ' + arg
         else:
             cmd = 'adb ' + arg
-        print('adb run: ' + cmd);
+        print('adb run: ' + cmd)
         p = os.popen(cmd)
         text = p.read()
         p.close()
@@ -262,6 +262,13 @@ class AdbDriver:
         except Exception as e:
             print(e)
         return (0,0)
+    
+    def startApp(self, appName, activityName):
+        ret = self.runCmd(f'shell am start {appName}/{activityName}')
+        if (ret.find('Error:') >= 0):
+            print('run app error')
+            return False
+        return True
 
 
 if __name__ == '__main__':
