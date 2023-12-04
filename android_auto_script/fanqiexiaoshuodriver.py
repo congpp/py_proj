@@ -159,7 +159,7 @@ class FanQieXiaoShuo(AppDriver):
 
     # 每日签到弹框
     def isAtMeiRiQianDaoPopup(self):
-        tags = {'每日签到', '立即签到.*', '签到提醒', '签到可领'}
+        tags = {'.*日签到', '立即签到.*', '签到提醒', '签到可领'}
         # 至少匹配三个
         cnt = self.getMatchCount(tags, self.matchTextItem)
         if cnt >= 3:
@@ -270,6 +270,7 @@ class FanQieXiaoShuo(AppDriver):
     def isTaskItemFound(self):
         tasks = {'看视频赚金币': '立即领取$',
                 '已连续签到.*签到可得.*金币$' : '^签到$',
+                '签到领金币$' : '^去签到$',
                 '签到专属福利' : '^去领取$'}
         for it in tasks:
             titles = self.matchAllTextItem(it)
@@ -344,9 +345,7 @@ class FanQieXiaoShuo(AppDriver):
                 self.goHome()
 
     def run(self, t):
-        timeBegin = time.time()
-        while time.time() - timeBegin < t:
-            self.runZhuanQianRenWu(10*60)
+        self.runZhuanQianRenWu(t)
 
 
 def main():

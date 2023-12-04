@@ -27,7 +27,7 @@ COLOR_TITLE_BAR_LINGJINBI = [78, 48, 253]
 COLOR_TITLE_BAR_LINGJINBI_DARK = [33, 38, 99]
 
 
-class DouYinDriver(AppDriver):
+class KuaiShou(AppDriver):
 
     tagMain = ['关注.{0,6}', '推荐', '精选']
     tagLingJinBi = ['金币收益', '现金收益']
@@ -35,11 +35,12 @@ class DouYinDriver(AppDriver):
 
     def __init__(self) -> None:
         self.phone = screen.XiaoMiMix2()
-        self.imgName = 'kuaishou.png'
+        self.imgName = 'screen.png'
         self.srcDir = '/sdcard/Pictures'
-        self.dstDir = 'd:/cyc/kuaishou'
+        self.dstDir = 'd:/zhuanqian/kuaishou'
         self.appName = '快手'
-        self.appid = 'com.smile.gifmaker'
+        self.appid = 'com.kuaishou.nebula'
+        self.activity = 'com.yxcorp.gifshow.HomeActivity'
         super().__init__()
 
     def isAtDesktop(self):
@@ -55,13 +56,10 @@ class DouYinDriver(AppDriver):
     def onAtDesktop(self):
         cnt = self.onStateChanged(STATE_DESKTOP)
         if cnt > 1:
-            txtItem = self.matchTextItem(self.appName)
-            if txtItem != None:
-                self.adb.clickPoint(txtItem.getClickXY())
-                self.onStateChanged('none')
+            self.adb.startApp(self.appid, self.activity)
 
     def isAtMainPage(self):
-        tags = ['首页', '精选', '消息.{0,3}', '我.{0,3}']
+        tags = ['首页', '朋友', '^去赚钱.*', '^我.*']
         # 至少匹配三个
         cnt = self.getMatchCount(tags, self.matchTextItemAtBottom)
         if cnt >= 3:
@@ -74,13 +72,9 @@ class DouYinDriver(AppDriver):
         cnt = self.onStateChanged(STATE_MAIN)
         if cnt > 5:
             raise (AppError(STATE_MEIRIQIANDAOPOPUP))
-        txtItem = self.findTextItem('三')
+        txtItem = self.findTextItem('去赚钱')
         if txtItem != None:
-            xy = txtItem.getClickXY()
-            if xy[0] < self.phone.w * 0.2 and xy[1] < self.phone.h * 0.125:
-                print('onMainPage 菜单按钮')
-                self.adb.clickPoint(xy)
-                return
+            self.adb.clickPoint(txtItem.getClickXY())
         else:
             x = self.phone.w * 0.1
             y = self.phone.getTitleBarY()
@@ -88,8 +82,8 @@ class DouYinDriver(AppDriver):
             self.adb.click(x, y)
 
     def isAtMainPageLeftPannel(self):
-        tags = ['^扫一扫$', '^快手小店$', '^任务中心$', '^服务中心$',
-                '^客服中心$', '^草稿箱$', '^历史记录$', '^时间管理$']
+        tags = ['^扫一扫$', '^快手小店$', '^朋友在看$', '^私信$',
+                '^服务中心$', '^草稿箱$', '^历史记录$', '^官方客服$']
         cnt = self.getMatchCount(tags, self.matchTextItem)
         if cnt >= 6:
             print("isAtMainPageLeftPannel -> YES")
@@ -102,7 +96,7 @@ class DouYinDriver(AppDriver):
         if cnt > 3:
             raise (AppError(STATE_MAIN_LEFT_PANNEL))
         elif cnt > 1:
-            txtItem = self.matchTextItem('^任务中心$')
+            txtItem = self.matchTextItem('^去赚钱$')
             if txtItem != None:
                 self.adb.clickPoint(txtItem.getClickXY())
 
@@ -127,9 +121,9 @@ class DouYinDriver(AppDriver):
         print('onMainPage error')
 
     def isAtLingJinBiPage(self):
-        clr = self.getCurrentImageMajorColor(
-            0, 0, self.phone.w, self.phone.getTitleBarY1Y2()[1])
-        if clr.getColorDistance(COLOR_TITLE_BAR_LINGJINBI) < 10 or clr.getColorDistance(COLOR_TITLE_BAR_LINGJINBI_DARK) < 10:
+        tags = {'^任务中心$', '.*限时奖励$', '我的金币', '我的抵用金'}
+        cnt = self.getMatchCount(tags, self.matchTextItemAtTop)
+        if cnt >= 2:
             print('isAtLingJinBiPage -> YES')
             return True
 
@@ -150,8 +144,7 @@ class DouYinDriver(AppDriver):
     def isMeiRiQianDaoBtnFound(self):
         tag = '^立即签到$'
         # 至少匹配三个
-        txtItem = self.findTextItemEx(tag, lambda txtItem: re.match(
-            tag, txtItem.text) != None and self.phone.w*0.45 < txtItem.getClickXY()[0] < self.phone.w*0.55)
+        txtItem = self.findTextItem(tag)
         if txtItem:
             self.taskItem = [tag, txtItem]
             print("isMeiRiQianDaoBtnFound -> YES")
@@ -168,7 +161,7 @@ class DouYinDriver(AppDriver):
             return
 
     def isAtKaiBaoXiang(self):
-        tag = '^立即领\d+金币$'
+        tag = '^开宝箱得金币$'
         txtItem = self.findTextItemEx(lambda txtItem: re.match(
             tag, txtItem.text) != None and txtItem.getClickXY() > (self.phone.w * 3 / 4, self.phone.h * 7/8))
         if txtItem != None:
@@ -184,6 +177,24 @@ class DouYinDriver(AppDriver):
             raise (AppError(STATE_MEIRIQIANDAOPOPUP))
         if cnt > 1:
             self.adb.clickPoint(self.taskItem[1].getClickXY())
+
+    def isAtKaiBaoXiangPopup(self):
+        tags={'恭喜你获得', '.*金币', '看内容最高可得.*', '赚更多'}
+        cnt = self.getMatchCount(tags, self.matchTextItem)
+        if cnt == 3:
+            print('isAtKaiBaoXiangPopup -> YES')
+            return True
+        print('isAtKaiBaoXiangPopup -> NO')
+        return False
+
+    def onKaiBaoXiangPopup(self):
+        cnt = self.onStateChanged('onKaiBaoXiangPopup')
+        if cnt > 2:
+            raise AppError('onKaiBaoXiangPopup')
+        txtItem = self.matchTextItem('看内容最高可得.*')
+        if txtItem:
+            self.adb.clickPoint(txtItem.getClickXY())
+
 
     def isAtAdVideo(self):
         tag = '^\d+s后可领取奖励$'
@@ -201,6 +212,21 @@ class DouYinDriver(AppDriver):
         if cnt > 3:
             raise (AppError(STATE_AD_VIDEO))
         time.sleep(15)
+
+    def isAtZhiBoJian(self):
+        tags = {'^更多直播$', '.*\d\d.\d\d$', '^今日爆款$', '^去开卡$'}
+        cnt = self.getMatchCount(tags, self.matchTextItemAtRight)
+        if cnt >= 2:
+            print("isAtZhiBoJian -> YES")
+            return True
+        print("isAtZhiBoJian -> NO")
+        return False
+
+    def onAdZhiBoJian(self):
+        cnt = self.onStateChanged('onAdZhiBoJian')
+        if cnt > 3:
+            raise (AppError('onAdZhiBoJian'))
+        time.sleep(20)
 
     # 继续看视频
     def isAtWatchAdVideoAgain(self):
@@ -231,7 +257,8 @@ class DouYinDriver(AppDriver):
                     return
 
     def isTaskItemFound(self):
-        tasks = {'^看广告赚金币.*多看多得.*': '^领福利$'}
+        tasks = {'^看广告得.*金币.*': '^领福利$',
+                '看激励广告.*':'^去观看$'}
         for it in tasks:
             titles = self.matchAllTextItem(it)
             btns = self.matchAllTextItem(tasks[it])
@@ -269,31 +296,13 @@ class DouYinDriver(AppDriver):
 
         self.adb.goBack()
 
-    def isAtGuangjieDeJiangLi(self):
-        tags = ['逛逛街', '多赚钱', '浏览\\d+秒可领\\d+金币', '更多商品', '^\d+秒$']
-        cnt = self.getMatchCount(tags, self.matchTextItem)
-        if cnt == 3:
-            print('isAtGuangjieDeJiangLi -> YES')
-            return True
-
-        print('isAtGuangjieDeJiangLi -> NO')
-        return False
-
-    def onGuangJieLingJinBi(self):
-        cnt = self.onStateChanged('onGuangJieLingJinBi')
-        if cnt > 20:
-            raise (AppError('onZouLuZhuanJinBiBottom'))
-
-        self.swipeUp()
-
     # 运行
 
     def runZhuanQianRenWu(self, timeout=30*60):
         timeBegin = time.time()
         while time.time() - timeBegin < timeout:
             try:
-                print('\n================= runZhuanQianRenWu %d =================\n' % (
-                    self.screencapId))
+                print(f'\n==== {self.appName} runZhuanQianRenWu {self.screencapId} =================\n')
                 time.sleep(10)
                 self.makeScreenCapGetText()
                 if self.isAtDesktop():
@@ -302,6 +311,8 @@ class DouYinDriver(AppDriver):
                     self.onQingShaoNianMoShi()
                 elif self.isAtMainPage():
                     self.onMainPage()
+                elif self.isAtMainPageLeftPannel():
+                    self.onMainPageLeftPannel()
                 elif self.isMeiRiQianDaoBtnFound():
                     self.onMeiRiQianDao()
                 elif self.isAtAdVideo():
@@ -310,6 +321,10 @@ class DouYinDriver(AppDriver):
                     self.onWatchAdVideoAgain()
                 elif self.isAtKaiBaoXiang():
                     self.onKaiBaoXiang()
+                elif self.isAtKaiBaoXiangPopup():
+                    self.onKaiBaoXiangPopup()
+                elif self.isAtZhiBoJian():
+                    self.onZhiBoJian()
                 # elif self.isAtZouLuZhuanJinBiTop(): self.onZouLuZhuanJinBiTop()
                 # elif self.isAtZouLuZhuanJinBiBottom: self.onZouLuZhuanJinBiBottom()
                 elif self.isTaskItemFound():
@@ -326,9 +341,8 @@ class DouYinDriver(AppDriver):
         timeBegin = time.time()
         while time.time() - timeBegin < timeout:
             try:
-                print('\n================= runShuaShiPin %d =================\n' % (
-                    self.screencapId))
-                time.sleep(10)
+                print(f'\n==== {self.appName} runShuaShiPin {self.screencapId} =================\n')
+                time.sleep(5)
                 self.makeScreenCapGetText()
                 if self.isAtDesktop():
                     self.onAtDesktop()
@@ -343,14 +357,13 @@ class DouYinDriver(AppDriver):
                 self.goHome()
 
     def run(self, t):
-        timeBegin = time.time()
-        while time.time() - timeBegin < t:
-            self.runZhuanQianRenWu(5*60)
-            self.runShuaShiPin(10*60)
+        self.runZhuanQianRenWu(t/2)
+        self.goHome()
+        self.runShuaShiPin(t/2)
 
 
 def main():
-    douyin = DouYinDriver()
+    douyin = KuaiShou()
     ljb, ssp, debug = False, False, True
     argc, t = len(sys.argv), 30 * 60
     for it in range(1, argc):

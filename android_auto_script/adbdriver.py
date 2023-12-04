@@ -263,12 +263,29 @@ class AdbDriver:
             print(e)
         return (0,0)
     
-    def startApp(self, appName, activityName):
-        ret = self.runCmd(f'shell am start {appName}/{activityName}')
+    def startApp(self, package, activity):
+        ret = self.runCmd(f'shell am start {package}/{activity}')
         if (ret.find('Error:') >= 0):
             print('run app error')
             return False
         return True
+
+    def dumpScreenXML(self, tempName):
+        #adb shell /system/bin/uiautomator dump --compressed /sdcard/uidump.xml
+        if self.isFileExists(tempName):
+            self.delFile(tempName)
+            
+        ret = self.runCmd(f'shell /system/bin/uiautomator dump --compressed {tempName}')
+        if (ret.find('UI hierchary dumped to:') >= 0):
+            return True
+        print('dump xml error')
+        return True
+
+    def pullScreenXML(self, srcPath, dstPath):
+        if self.dumpScreenXML(srcPath):
+            return self.pullFile(srcPath, dstPath)
+        print('pull xml error')
+        return False
 
 
 if __name__ == '__main__':

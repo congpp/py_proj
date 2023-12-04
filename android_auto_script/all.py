@@ -3,14 +3,15 @@ import sys
 import os
 import re
 import time
-import douyindriver
-import fanqiexiaoshuodriver
+from douyindriver import DouYin
+from fanqiexiaoshuodriver import FanQieXiaoShuo
+from kuaishoudriver import KuaiShou
 
 def main():
-	t = 20 * 60
+	t = 6 * 60
 	try:
 		while(True):
-			apps = [douyindriver.DouYin(), fanqiexiaoshuodriver.FanQieXiaoShuo()]
+			apps = [KuaiShou(), DouYin(), FanQieXiaoShuo(), ]
 			for app in apps:
 				app.goHome()
 				app.run(t)

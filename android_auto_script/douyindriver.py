@@ -438,11 +438,10 @@ class DouYin(AppDriver):
                 print(e)
                 self.goHome()
 
-    def run(self, t):
-        timeBegin = time.time()
-        while time.time() - timeBegin < t:
-            self.runZhuanQianRenWu(10*60)
-            self.runShuaShiPin(10*60)
+    def run(self, t):    
+        self.runZhuanQianRenWu(t/2)
+        self.goHome()
+        self.runShuaShiPin(t/2)
 
 
 def main():
