@@ -3,13 +3,11 @@ from file_watcher import DirWatcher
 import sys
 import os
 import time
-import threading
 import re
 
 class SouiSkinWatcher:
-    def __init__(self) -> None:    
-        self.exePath = r"D:\CYC\DataRecovery\bin\Debug"
-        self.exeFile = r"SouiSkinPreview.exe"
+    def __init__(self) -> None:
+        self.exePath = r""
         self.skinFile = ''
         self.watchPath = ''
         self.othercmd = ''
@@ -33,26 +31,41 @@ class SouiSkinWatcher:
         head=[]
         with open(indexFile) as f:
             head = f.readlines(10)
-        reg = re.compile(r'<!--.*@preview="(.*?)".*-->')
+        regP = re.compile(r'<!--.*@preview="(.*?)".*-->')
+        regX = re.compile(r'<!--.*@x="(\d+)".*-->')
+        regY = re.compile(r'<!--.*@y="(\d+)".*-->')
+        regCmd = re.compile(r'<!--.*@cmd="(.*?)".*-->')
         for line in head:
-            m = reg.match(line)
-            if m and os.path.exists(m[1]):
-                self.exePath = m[1]
-                self.exeFile = os.path.basename(self.exePath)
-                print(f'preview: {self.exePath}')
-            regX = re.compile(r'<!--.*@x="(\d+)".*-->')
+            print(line)
+            m = regP.match(line)
+            if m:
+                p = m[1]
+                #p is relative path
+                if len(p) > 2 and p[1] != ':':
+                    p = os.path.abspath(os.path.join(os.path.split(indexFile)[0], p))
+                if os.path.exists(p):
+                    self.exePath = p
+                    print(f'preview: {self.exePath}')
+                else:
+                    print(f'preview: {p} not found!')
             m = regX.match(line)
             if m:
                 self.x = int(m[1])
-            regY = re.compile(r'<!--.*@y="(\d+)".*-->')
             m = regY.match(line)
             if m:
                 self.y = int(m[1])
             print(f'preview x: {self.x}, {self.y}')
+            
+            m = regCmd.match(line)
+            if m:
+                self.othercmd = m[1]
+                print(f'othercmd: {m[1]}')
             break
 
-    def onFileChanged(self, fileName, action, fileNameNew):
-        cmd = "tskill " + self.exeFile.rstrip(".exe")
+    def onFileChanged(self, filelist):
+        if not os.path.exists(self.exePath):
+            raise Exception(f'preview: {self.exePath} not found!')
+        cmd = "tskill " + os.path.basename(self.exePath).rstrip(".exe")
         print(f'run: {cmd}')
         os.system(cmd)
         time.sleep(0.25)
@@ -69,17 +82,13 @@ class SouiSkinWatcher:
         skinPath = os.path.dirname(self.skinFile)
         self.findPreviewExe(skinPath)
 
+        self.onFileChanged([self.skinFile])
         for cmd in sys.argv[2:]:
             if cmd.lower() == '-once':
                 return
 
         print('Watching: ' + self.watchPath)
-        self.othercmd = ' '.join(sys.argv[2:])
-        
-        self.onFileChanged(self.skinFile, 1, None)
-        watcher = DirWatcher()
-        self.t = threading.Thread(target=lambda:{watcher.start(self.watchPath, self.onFileChanged)})
-        self.t.start()
+        DirWatcher().start(self.watchPath, self.onFileChanged)
 
 
 if __name__ == "__main__":

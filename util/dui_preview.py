@@ -21,7 +21,7 @@ class DuiSkinWatcher:
             return
 
         head=[]
-        with open(self.skinFile) as f:
+        with open(self.skinFile, encoding='utf-8') as f:
             head = f.readlines(10)
         reg = re.compile(r'<!--.*@preview="(.*?)".*-->')
         for line in head:
@@ -41,12 +41,13 @@ class DuiSkinWatcher:
             print(f'preview x: {self.x}, {self.y}')
             break
 
-    def onFileChanged(self, fileName, action, fileNameNew):
+    def onFileChanged(self, fileName):
         cmd = "tskill " + self.exeFile.rstrip(".exe")
         print(f'run: {cmd}')
         os.system(cmd)
         time.sleep(0.25)
-        cmd = f"start {self.exePath} {self.skinFile} -skia -p {self.x} {self.y} {self.othercmd}"
+        fullpath=os.path.join(self.exePath, self.exeFile)
+        cmd = f'start {fullpath} "{self.skinFile}" -p {self.x} {self.y} {self.othercmd}'
         print(f'run: {cmd}')
         os.system(cmd)
 
@@ -64,12 +65,7 @@ class DuiSkinWatcher:
                 return
 
         print('Watching: ' + self.watchPath)
-        self.othercmd = ' '.join(sys.argv[2:])
-        
-        self.onFileChanged(self.skinFile, 1, None)
-        watcher = DirWatcher()
-        self.t = threading.Thread(target=lambda:{watcher.start(self.watchPath, self.onFileChanged)})
-        self.t.start()
+        DirWatcher().start(self.watchPath, self.onFileChanged)
 
 
 if __name__ == "__main__":

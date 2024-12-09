@@ -13,7 +13,7 @@ url_w = "https://www.kugou.com/yy/index.php?r=play/getdata&hash={HASHID}"
 url_m = "http://m.kugou.com/app/i/getSongInfo.php?cmd=playInfo&hash={HASHID}"
 
 cookie = RequestsCookieJar()
-cookie.set("kg_mid", "2333")
+#cookie.set("kg_mid", "2333")
 isRecursive = False
 
 def getSongNameM(hashID):
@@ -30,7 +30,7 @@ def getSongNameM(hashID):
     try:
         js = json.loads(res.text)
         return js["fileName"]
-    except Exception, e:
+    except Exception as e:
         print(e)
         return ""
 
@@ -54,7 +54,7 @@ def getSongNameW(hashID):
     try:
         js = json.loads(res.text)
         return js["data"]["audio_name"]
-    except Exception, e:
+    except Exception as e:
         print(e)
         return ""
 
@@ -65,10 +65,10 @@ def getSongName(hashID):
         songName = getSongNameM(hashID);
         
     for ch in "\\/:*?\"<>|" :
-        songName = songName.replace(ch, "");
+        songName = songName.replace(ch, "")
         
-    print(hashID + " => " + songName.encode("gbk", 'ignore'))
-    return songName;
+    print(hashID + " => " + songName)
+    return songName
 
 def renameDir(dirPath):
     for f in os.listdir(dirPath):
@@ -80,7 +80,7 @@ def renameDir(dirPath):
 
 def getUniqueFileName(dirPath, fileName, fileExt):
     i=1
-    newFilePath = dirPath + "\\" + fileName + "." + fileExt;
+    newFilePath = dirPath + "\\" + fileName + "." + fileExt
     while os.path.exists(newFilePath):
         newFilePath = dirPath + "\\" + fileName + "(" + str(i) + ")." + fileExt;
         i = i+1
@@ -95,10 +95,10 @@ def renameFile(filePath):
         if re.match("[0-9a-f]{32}", nameset[0]):
             songName = getSongName(nameset[0])
         if len(songName) > 0 :
-            newFilePath = getUniqueFileName(dirPath, songName, nameset[1]);
-            print(filePath + " rename to " + newFilePath.encode("gbk", 'ignore'))
+            newFilePath = getUniqueFileName(dirPath, songName, nameset[1])
+            print(filePath + " rename to " + newFilePath)
             os.rename(filePath, newFilePath)
-    except Exception, e:
+    except Exception as e:
         print(e)
         print("Error skip " + filePath)
 
@@ -108,4 +108,4 @@ if __name__ == '__main__':
     if os.path.isdir(inputFile):
         renameDir(inputFile)
     else:
-        renameFile(inputFile);
+        renameFile(inputFile)
